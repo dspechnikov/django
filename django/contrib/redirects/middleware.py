@@ -1,8 +1,7 @@
-from django.apps import apps
+from django.http.request import split_domain_port
+
 from django.conf import settings
 from django.contrib.redirects.models import Redirect
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseGone, HttpResponsePermanentRedirect
 from django.utils.deprecation import MiddlewareMixin
 
@@ -12,39 +11,28 @@ class RedirectFallbackMiddleware(MiddlewareMixin):
     response_gone_class = HttpResponseGone
     response_redirect_class = HttpResponsePermanentRedirect
 
-    def __init__(self, get_response=None):
-        if not apps.is_installed('django.contrib.sites'):
-            raise ImproperlyConfigured(
-                "You cannot use RedirectFallbackMiddleware when "
-                "django.contrib.sites is not installed."
-            )
-        super().__init__(get_response)
-
     def process_response(self, request, response):
         # No need to check for a redirect for non-404 responses.
         if response.status_code != 404:
             return response
 
-        full_path = request.get_full_path()
-        current_site = get_current_site(request)
+        domain, _ = split_domain_port(request.get_host())
 
-        r = None
-        try:
-            r = Redirect.objects.get(site=current_site, old_path=full_path)
-        except Redirect.DoesNotExist:
-            pass
-        if r is None and settings.APPEND_SLASH and not request.path.endswith('/'):
-            try:
-                r = Redirect.objects.get(
-                    site=current_site,
-                    old_path=request.get_full_path(force_append_slash=True),
-                )
-            except Redirect.DoesNotExist:
-                pass
+        paths = [request.get_full_path()]
+        if settings.APPEND_SLASH and not request.path.endswith('/'):
+            paths.append(
+                request.get_full_path(force_append_slash=True)
+            )
+
+        r = Redirect.objects.filter(
+            domain__in=[domain, ''],
+            old_path__in=paths
+        ).order_by('-domain', 'old_path').first()
+
         if r is not None:
             if r.new_path == '':
                 return self.response_gone_class()
+
             return self.response_redirect_class(r.new_path)
 
-        # No redirect was found. Return the response.
         return response
