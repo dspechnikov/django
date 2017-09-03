@@ -6,13 +6,13 @@ class Redirect(models.Model):
     domain = models.CharField(
         max_length=255,
         blank=True,
-        verbose_name=_('domain')
+        verbose_name=_('domain'),
+        help_text=_('If set, redirect requests from this domain only.'),
     )
 
     old_path = models.CharField(
         max_length=200,
         db_index=True,
-        unique=True,
         verbose_name=_('redirect from'),
         help_text=_("This should be an absolute path, excluding the domain name. Example: '/events/search/'."),
     )
