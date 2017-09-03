@@ -38,15 +38,15 @@ class Migration(migrations.Migration):
                 verbose_name='domain'
             )
         ),
-        migrations.AlterUniqueTogether(
-            name='redirect',
-            unique_together=('old_path', 'domain')
-        ),
 
         migrations.RunPython(migrate_site_domains, migrations.RunPython.noop),
 
         migrations.RemoveField(
             model_name='redirect',
             name='site_id'
+        ),
+        migrations.AlterUniqueTogether(
+            name='redirect',
+            unique_together=('old_path', 'domain')
         ),
     ]
