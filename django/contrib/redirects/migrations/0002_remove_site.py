@@ -3,13 +3,15 @@ from django.db import migrations, models
 
 
 def migrate_site_domains(apps, schema_editor):
+    db_alias = schema_editor.connection.alias
+
     try:
         Site = apps.get_model('sites', 'Site')
     except LookupError:
         return
 
     Redirect = apps.get_model('redirects', 'Redirect')
-    for r in Redirect.objects.all():
+    for r in Redirect.objects.using(db_alias).all():
         if r.site_id:
             site = Site.objects.get(id=r.site_id)
 
