@@ -31,4 +31,4 @@ class Redirect(models.Model):
         ordering = ('old_path',)
 
     def __str__(self):
-        return "%s ---> %s" % (self.old_path, self.new_path)
+        return "%s%s ---> %s" % (self.domain, self.old_path, self.new_path)
