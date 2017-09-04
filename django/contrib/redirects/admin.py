@@ -48,16 +48,21 @@ class RedirectAdmin(admin.ModelAdmin):
     search_fields = ('domain', 'old_path', 'new_path')
 
     def get_fieldsets(self, request, obj=None):
-        redirect_from_fields = ['old_path', 'domain']
+        source_fields = ['old_path', 'domain']
 
         if apps.is_installed('django.contrib.sites'):
-            redirect_from_fields.append('site')
+            source_fields.append('site')
 
         return (
             (_('Source'), {
-                'fields': redirect_from_fields
+                'fields': source_fields
             }),
             (_('Destination'), {
                 'fields': ('new_path',)
             }),
         )
+
+    def get_form(self, request, obj=None, **kwargs):
+        kwargs['fields'] = ('old_path', 'domain', 'new_path')
+
+        return super().get_form(request, obj, **kwargs)

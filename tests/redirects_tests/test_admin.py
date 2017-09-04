@@ -1,10 +1,14 @@
 from unittest import skipIf
 
+from django.contrib.admin import AdminSite
+from django.contrib.admin.utils import flatten_fieldsets
+from django.contrib.redirects.admin import RedirectAdmin
+
 from django.apps import apps
 from django.contrib.redirects import admin
 from django.contrib.redirects.models import Redirect
 from django.forms import modelform_factory
-from django.test import TestCase, modify_settings
+from django.test import TestCase, modify_settings, RequestFactory
 
 
 class RedirectFormTests(TestCase):
@@ -56,3 +60,22 @@ class RedirectFormTests(TestCase):
         self.assertTrue(
             Redirect.objects.get(domain='', old_path='/old/')
         )
+
+
+class RedirectAdminTests(TestCase):
+    def test_site_field_enabled(self):
+        ma = RedirectAdmin(Redirect, AdminSite())
+        request = RequestFactory().get('/')
+
+        fields = flatten_fieldsets(ma.get_fieldsets(request))
+
+        self.assertIn('site', fields)
+
+    @modify_settings(INSTALLED_APPS={'remove': 'django.contrib.sites'})
+    def test_no_site_field(self):
+        ma = RedirectAdmin(Redirect, AdminSite())
+        request = RequestFactory().get('/')
+
+        fields = flatten_fieldsets(ma.get_fieldsets(request))
+
+        self.assertNotIn('site', fields)
