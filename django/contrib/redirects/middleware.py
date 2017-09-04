@@ -3,16 +3,18 @@ from django.http.request import split_domain_port
 from django.conf import settings
 from django.contrib.redirects.models import Redirect
 from django.http import HttpResponseGone, HttpResponsePermanentRedirect
-from django.utils.deprecation import MiddlewareMixin
 
 
-class RedirectFallbackMiddleware(MiddlewareMixin):
-    # Defined as class-level attributes to be subclassing-friendly.
+class RedirectFallbackMiddleware:
     response_gone_class = HttpResponseGone
     response_redirect_class = HttpResponsePermanentRedirect
 
-    def process_response(self, request, response):
-        # No need to check for a redirect for non-404 responses.
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
         if response.status_code != 404:
             return response
 
