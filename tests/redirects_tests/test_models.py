@@ -1,10 +1,10 @@
 from django.contrib.redirects.models import Redirect
-from django.test import TestCase
+from django.test import SimpleTestCase
 
 
-class RedirectTests(TestCase):
+class RedirectTests(SimpleTestCase):
     def test_str_representation(self):
-        r = Redirect.objects.create(
+        r = Redirect(
             domain='test.loc',
             old_path='/initial',
             new_path='/new_target'
