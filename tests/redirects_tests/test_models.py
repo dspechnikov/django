@@ -10,4 +10,4 @@ class RedirectTests(SimpleTestCase):
             new_path='/new_target'
         )
 
-        self.assertEqual(str(r), "test.loc/initial ---> /new_target")
+        self.assertEqual(str(r), 'test.loc/initial ---> /new_target')
