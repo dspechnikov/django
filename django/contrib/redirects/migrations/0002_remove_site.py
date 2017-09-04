@@ -35,10 +35,11 @@ class Migration(migrations.Migration):
             model_name='redirect',
             name='domain',
             field=models.CharField(
-                max_length=255,
                 blank=True,
+                help_text='If set, redirect requests from this domain only.',
+                max_length=255,
                 verbose_name='domain'
-            )
+            ),
         ),
 
         migrations.RunPython(migrate_site_domains, migrations.RunPython.noop),
